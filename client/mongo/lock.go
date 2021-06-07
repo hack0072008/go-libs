@@ -1,4 +1,4 @@
-package tryLock
+package mongoClient
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hack0072008/go-libs/client/mongo"
 	"github.com/hack0072008/go-libs/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -22,11 +21,29 @@ type Mutex struct {
 	timeout int64
 }
 
-//创建一个分布式锁 timeout 锁的超时时间 name 锁名
-func NewTryLock(ctx context.Context, name string, timeout time.Duration) Mutex {
+/*
+GpuLock
+*/
+func NewHostGpuLock(ctx context.Context, hostId string, timeout time.Duration) Mutex {
+	name := "GpuLock_" + hostId
+	return CreateLock(ctx, name, timeout)
+}
+
+/*
+NicLock
+*/
+func NewHostNicLock(ctx context.Context, hostId string, timeout time.Duration) Mutex {
+	name := "NicLock_" + hostId
+	return CreateLock(ctx, name, timeout)
+}
+
+/*
+创建一个分布式锁 timeout 锁的超时时间 name 锁名
+*/
+func CreateLock(ctx context.Context, name string, timeout time.Duration) Mutex {
 	if pool == nil {
 		gen := func() interface{} {
-			client := mongoClient.GetClient()
+			client := GetClient()
 			if client == nil {
 				log.Warn("mongoClient get client is nil")
 				return nil
@@ -43,8 +60,10 @@ func NewTryLock(ctx context.Context, name string, timeout time.Duration) Mutex {
 	}
 }
 
-//尝试获取锁
-func (m Mutex) TryLock() (bool, error) {
+/*
+尝试获取锁
+*/
+func (m Mutex) GetLock() (bool, error) {
 	col, ok := pool.Get().(*mongo.Collection)
 	if !ok || col == nil {
 		m.log.Warn("mongoClient get client error")
@@ -87,7 +106,7 @@ func (m Mutex) Lock(interval, timeout time.Duration) error {
 			m.log.Error("lock timeout")
 			return errors.New("lock timeout")
 		default:
-			ok, err := m.TryLock()
+			ok, err := m.GetLock()
 			if err != nil {
 				m.log.Error(err)
 				return err

@@ -12,6 +12,11 @@ type UidLog struct {
 	uuid string
 }
 
+
+/*
+ Useage:
+    ulog := NewUidLog(ctx)
+*/
 func NewUidLog(ctx context.Context) UidLog {
 	id := ctx.Value("uuid")
 	if uid, ok := id.(string); ok {
@@ -20,6 +25,9 @@ func NewUidLog(ctx context.Context) UidLog {
 	return UidLog{uuid: fmt.Sprintf("[%s] ", uuid.New().String())}
 }
 
+/*
+  Get ulog UUID
+ */
 func (t UidLog) GetUUID() string {
 	return t.uuid[1 : len(t.uuid)-1]
 }

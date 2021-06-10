@@ -9,6 +9,10 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+/*
+ Useage:
+    logger := InitLogger(full_path, level)
+ */
 func InitLogger(path string, level string) {
 	logLevel := zapcore.InfoLevel
 	switch strings.ToLower(level) {

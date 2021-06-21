@@ -3,6 +3,7 @@ module github.com/hack0072008/go-libs
 go 1.15
 
 require (
+	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/google/uuid v1.2.0

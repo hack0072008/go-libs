@@ -252,3 +252,32 @@ func ParamIllegalMapCheck(param ...interface{}) error {
 }
 
 
+// id转化为ip, 例如:10064131001 -> 10.64.131.1
+func IdToIp(id uint64) string {
+	idS := fmt.Sprintf("%d", id)
+	if len(idS) == 11 {
+		idS = fmt.Sprintf("0%s", idS)
+	} else if len(idS) == 10 {
+		idS = fmt.Sprintf("00%s", idS)
+	}
+	idStr := []byte(idS)
+
+	var arr []int
+	for i := 0; i < 4; i++ {
+		n, err := strconv.Atoi(string(idStr[i*3 : (i+1)*3]))
+		if err != nil {
+			panic(fmt.Errorf("%v id", err))
+		}
+		arr = append(arr, n)
+	}
+
+	var str = ""
+	for i := 0; i < 4; i++ {
+		str += fmt.Sprintf("%d", arr[i])
+		if i != 3 {
+			str += "."
+		}
+	}
+	return str
+}
+

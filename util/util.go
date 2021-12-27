@@ -1,21 +1,23 @@
 package util
 
 import (
+	"errors"
 	"fmt"
+	"github.com/hack0072008/go-libs/log"
 	"math/rand"
 	"net"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
-	"errors"
 
 	"github.com/cihub/seelog"
 )
 
-
 /*
 生成 mac 地址 改成大写形式
- */
+*/
 func GenMacAddrs(prefix []byte, count int, exclude []string) []string {
 	macs := make(map[string]bool, count)
 	excludeMap := make(map[string]bool, len(exclude))
@@ -46,7 +48,6 @@ func GenMacAddrs(prefix []byte, count int, exclude []string) []string {
 	return result
 }
 
-
 /**
 *生成随机字符
 **/
@@ -58,14 +59,13 @@ func RandString(length int) string {
 		if t == 0 {
 			rs = append(rs, strconv.Itoa(rand.Intn(10)))
 		} else if t == 1 {
-			rs = append(rs, fmt.Sprintf("%d",rand.Intn(26)+65))
+			rs = append(rs, fmt.Sprintf("%d", rand.Intn(26)+65))
 		} else {
-			rs = append(rs, fmt.Sprintf("%d",rand.Intn(26)+97))
+			rs = append(rs, fmt.Sprintf("%d", rand.Intn(26)+97))
 		}
 	}
 	return strings.Join(rs, "")
 }
-
 
 // 参数非法校验
 func ParamIllegalCheck(param ...interface{}) error {
@@ -251,7 +251,6 @@ func ParamIllegalMapCheck(param ...interface{}) error {
 	return nil
 }
 
-
 // id转化为ip, 例如:10064131001 -> 10.64.131.1
 func IdToIp(id uint64) string {
 	idS := fmt.Sprintf("%d", id)
@@ -281,3 +280,25 @@ func IdToIp(id uint64) string {
 	return str
 }
 
+// runCommand is a shared function used by check and reload
+// to run the given command and log its output.
+// It returns nil if the given cmd returns 0.
+// The command can be run on unix and windows.
+func runCommand(cmd string) error {
+	log.Debug("Running " + cmd)
+	var c *exec.Cmd
+	if runtime.GOOS == "windows" {
+		c = exec.Command("cmd", "/C", cmd)
+	} else {
+		c = exec.Command("/bin/sh", "-c", cmd)
+	}
+
+	output, err := c.CombinedOutput()
+	if err != nil {
+		log.Error(fmt.Sprintf("%q", string(output)))
+		return err
+	}
+	log.Debug(fmt.Sprintf("%q", string(output)))
+
+	return nil
+}
